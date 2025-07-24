@@ -4,7 +4,7 @@
 
 ## UoK - Call for All ARGs
 
-From Laravel to Next.js
+Moving from Laravel to Next.js framework
 
 ---
 
