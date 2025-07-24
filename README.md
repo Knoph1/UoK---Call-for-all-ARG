@@ -1,7 +1,5 @@
 # University of Kabianga - Research Portal
 
----
-
 ## UoK - Call for All ARGs
 
 Moving from Laravel to Next.js framework
