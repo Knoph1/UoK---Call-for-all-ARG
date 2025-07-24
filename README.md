@@ -25,5 +25,5 @@ The framework is open-sourced software...
 
 ---
 
-@Knoph1 | Copyright 2025
+@UoK | Copyright 2025
 
