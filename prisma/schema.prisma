@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,44 +7,41 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Core User Management
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  name         String
-  passwordHash String
-  role         UserRole @default(GENERAL_USER)
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  // Relations
-  researcher   Researcher?
-  loginAudits  LoginAudit[]
-  auditLogs    AuditLog[]
-  evaluations  Evaluation[]
-  feedbacks    Feedback[]
-  supervisedProjects Project[] @relation("SupervisorProjects")
+  id                 String             @id @default(cuid())
+  email              String             @unique
+  name               String
+  passwordHash       String
+  role               UserRole           @default(GENERAL_USER)
+  isActive           Boolean            @default(true)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  auditLogs          AuditLog[]
+  evaluations        Evaluation[]
+  feedbacks          Feedback[]
+  loginAudits        LoginAudit[]
+  supervisedProjects Project[]          @relation("SupervisorProjects")
+  researcher         Researcher?
+  user_permissions   user_permissions[]
 
   @@map("users")
 }
 
 model Researcher {
-  id             String  @id @default(cuid())
-  userId         String  @unique
-  employeeNumber String  @unique
+  id             String     @id @default(cuid())
+  userId         String     @unique
+  employeeNumber String     @unique
   departmentId   String
   designation    String?
   phone          String?
-  isApproved     Boolean @default(false)
+  isApproved     Boolean    @default(false)
   approvedAt     DateTime?
   approvedBy     String?
+  proposals      Proposal[]
+  department     Department @relation(fields: [departmentId], references: [id])
+  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Relations
-  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  department Department @relation(fields: [departmentId], references: [id])
-  proposals  Proposal[]
-
+  @@index([departmentId], map: "researchers_departmentId_fkey")
   @@map("researchers")
 }
 
@@ -58,167 +52,152 @@ model LoginAudit {
   ip        String?
   userAgent String?
   timestamp DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  @@index([userId], map: "login_audits_userId_fkey")
   @@map("login_audits")
 }
 
-// Grant & Financial Management
 model FinancialYear {
-  id        String   @id @default(cuid())
-  label     String   @unique
-  startDate DateTime
-  endDate   DateTime
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
+  id            String         @id @default(cuid())
+  label         String         @unique
+  startDate     DateTime
+  endDate       DateTime
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   grantOpenings GrantOpening[]
 
   @@map("financial_years")
 }
 
 model GrantOpening {
-  id               String   @id @default(cuid())
-  financialYearId  String
-  name             String
-  description      String?
-  openDate         DateTime
-  closeDate        DateTime
-  budgetCeiling    Decimal  @db.Decimal(15, 2)
-  isActive         Boolean  @default(true)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id              String        @id @default(cuid())
+  financialYearId String
+  name            String
+  description     String?
+  openDate        DateTime
+  closeDate       DateTime
+  budgetCeiling   Decimal       @db.Decimal(15, 2)
+  isActive        Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  financialYear   FinancialYear @relation(fields: [financialYearId], references: [id], onDelete: Cascade)
+  proposals       Proposal[]
 
-  // Relations
-  financialYear FinancialYear @relation(fields: [financialYearId], references: [id], onDelete: Cascade)
-  proposals     Proposal[]
-
+  @@index([financialYearId], map: "grant_openings_financialYearId_fkey")
   @@map("grant_openings")
 }
 
-// Research Themes
 model Theme {
-  id          String   @id @default(cuid())
-  name        String   @unique
+  id          String     @id @default(cuid())
+  name        String     @unique
   description String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  proposals Proposal[]
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  proposals   Proposal[]
 
   @@map("themes")
 }
 
-// Add Department model after Theme model
 model Department {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  code        String   @unique
+  id          String       @id @default(cuid())
+  name        String       @unique
+  code        String       @unique
   description String?
   headOfDept  String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
   researchers Researcher[]
 
   @@map("departments")
 }
 
-// Proposal Management
 model Proposal {
-  id              String          @id @default(cuid())
-  researcherId    String
-  grantOpeningId  String
-  themeId         String
-  researchTitle   String
-  objectives      String          @db.Text
-  methodology     String          @db.Text
-  timeline        String          @db.Text
-  requestedAmount Decimal         @db.Decimal(15, 2)
-  approvedAmount  Decimal?        @db.Decimal(15, 2)
-  status          ProposalStatus  @default(SUBMITTED)
-  priority        ProposalPriority @default(MEDIUM)
-  submissionDate  DateTime        @default(now())
-  reviewDate      DateTime?
-  approvalDate    DateTime?
-  rejectionReason String?         @db.Text
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
-
-  // Relations
-  researcher        Researcher              @relation(fields: [researcherId], references: [id], onDelete: Cascade)
-  grantOpening      GrantOpening            @relation(fields: [grantOpeningId], references: [id], onDelete: Cascade)
-  theme             Theme                   @relation(fields: [themeId], references: [id], onDelete: Cascade)
-  coInvestigators   CoInvestigator[]
-  publications      Publication[]
+  id                  String               @id @default(cuid())
+  researcherId        String
+  grantOpeningId      String
+  themeId             String
+  researchTitle       String
+  objectives          String               @db.Text
+  methodology         String               @db.Text
+  timeline            String               @db.Text
+  requestedAmount     Decimal              @db.Decimal(15, 2)
+  approvedAmount      Decimal?             @db.Decimal(15, 2)
+  status              ProposalStatus       @default(SUBMITTED)
+  priority            ProposalPriority     @default(MEDIUM)
+  submissionDate      DateTime             @default(now())
+  reviewDate          DateTime?
+  approvalDate        DateTime?
+  rejectionReason     String?              @db.Text
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  coInvestigators     CoInvestigator[]
+  project             Project?
+  attachments         ProposalAttachment[]
+  budgetItems         ProposalBudgetItem[]
+  grantOpening        GrantOpening         @relation(fields: [grantOpeningId], references: [id], onDelete: Cascade)
+  researcher          Researcher           @relation(fields: [researcherId], references: [id], onDelete: Cascade)
+  theme               Theme                @relation(fields: [themeId], references: [id], onDelete: Cascade)
+  publications        Publication[]
   researchDesignItems ResearchDesignItem[]
-  budgetItems       ProposalBudgetItem[]
-  workplanItems     WorkplanItem[]
-  attachments       ProposalAttachment[]
-  project           Project?
+  workplanItems       WorkplanItem[]
 
+  @@index([grantOpeningId], map: "proposals_grantOpeningId_fkey")
+  @@index([researcherId], map: "proposals_researcherId_fkey")
+  @@index([themeId], map: "proposals_themeId_fkey")
   @@map("proposals")
 }
 
 model CoInvestigator {
-  id         String @id @default(cuid())
+  id         String   @id @default(cuid())
   proposalId String
   name       String
   email      String
   phone      String?
   role       String?
+  proposal   Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
 
-  // Relations
-  proposal Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
-
+  @@index([proposalId], map: "co_investigators_proposalId_fkey")
   @@map("co_investigators")
 }
 
 model Publication {
-  id         String @id @default(cuid())
+  id         String   @id @default(cuid())
   proposalId String
   title      String
   journal    String?
   year       Int?
   link       String?
   doi        String?
+  proposal   Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
 
-  // Relations
-  proposal Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
-
+  @@index([proposalId], map: "publications_proposalId_fkey")
   @@map("publications")
 }
 
 model ResearchDesignItem {
-  id          String @id @default(cuid())
+  id          String   @id @default(cuid())
   proposalId  String
   title       String
-  description String @db.Text
+  description String   @db.Text
+  proposal    Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
 
-  // Relations
-  proposal Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
-
+  @@index([proposalId], map: "research_design_items_proposalId_fkey")
   @@map("research_design_items")
 }
 
 model ProposalBudgetItem {
-  id         String  @id @default(cuid())
+  id         String   @id @default(cuid())
   proposalId String
   itemName   String
-  cost       Decimal @db.Decimal(15, 2)
+  cost       Decimal  @db.Decimal(15, 2)
   notes      String?
+  proposal   Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
 
-  // Relations
-  proposal Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
-
+  @@index([proposalId], map: "proposal_budget_items_proposalId_fkey")
   @@map("proposal_budget_items")
 }
 
@@ -229,10 +208,9 @@ model WorkplanItem {
   startDate  DateTime
   endDate    DateTime
   notes      String?
+  proposal   Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
 
-  // Relations
-  proposal Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
-
+  @@index([proposalId], map: "workplan_items_proposalId_fkey")
   @@map("workplan_items")
 }
 
@@ -244,83 +222,77 @@ model ProposalAttachment {
   fileType   String
   fileSize   Int
   uploadedAt DateTime @default(now())
+  proposal   Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
 
-  // Relations
-  proposal Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
-
+  @@index([proposalId], map: "proposal_attachments_proposalId_fkey")
   @@map("proposal_attachments")
 }
 
-// Project Management
 model Project {
-  id              String        @id @default(cuid())
-  proposalId      String        @unique
+  id              String         @id @default(cuid())
+  proposalId      String         @unique
   supervisorId    String
   startDate       DateTime
   endDate         DateTime?
-  status          ProjectStatus @default(INITIATED)
-  overallProgress Int           @default(0)
-  budgetUtilized  Decimal       @default(0) @db.Decimal(15, 2)
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  status          ProjectStatus  @default(INITIATED)
+  overallProgress Int            @default(0)
+  budgetUtilized  Decimal        @default(0.00) @db.Decimal(15, 2)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  evaluations     Evaluation[]
+  feedbacks       Feedback[]
+  impactMetrics   ImpactMetric[]
+  proposal        Proposal       @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  supervisor      User           @relation("SupervisorProjects", fields: [supervisorId], references: [id])
 
-  // Relations
-  proposal     Proposal     @relation(fields: [proposalId], references: [id], onDelete: Cascade)
-  supervisor   User         @relation("SupervisorProjects", fields: [supervisorId], references: [id])
-  evaluations  Evaluation[]
-  feedbacks    Feedback[]
-  impactMetrics ImpactMetric[]
-
+  @@index([supervisorId], map: "projects_supervisorId_fkey")
   @@map("projects")
 }
 
-// Supervision & Monitoring
 model Evaluation {
-  id           String   @id @default(cuid())
-  projectId    String
-  evaluatorId  String
-  comment      String   @db.Text
-  score        Int?     // 1-10 scale
-  date         DateTime @default(now())
+  id             String   @id @default(cuid())
+  projectId      String?
+  evaluatorId    String
+  comment        String   @db.Text
+  score          Int?
+  date           DateTime @default(now())
   attachmentPath String?
+  evaluator      User     @relation(fields: [evaluatorId], references: [id])
+  project        Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
-  // Relations
-  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  evaluator User    @relation(fields: [evaluatorId], references: [id])
-
+  @@index([evaluatorId], map: "evaluations_evaluatorId_fkey")
+  @@index([projectId], map: "evaluations_projectId_fkey")
   @@map("evaluations")
 }
 
-// Feedback & Impact Collection
 model Feedback {
-  id        String       @id @default(cuid())
-  projectId String
-  authorId  String
-  type      FeedbackType
-  content   String       @db.Text
-  createdAt DateTime     @default(now())
-
-  // Relations
-  project      Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  author       User           @relation(fields: [authorId], references: [id])
+  id            String         @id @default(cuid())
+  projectId     String
+  authorId      String
+  type          FeedbackType
+  content       String         @db.Text
+  createdAt     DateTime       @default(now())
+  author        User           @relation(fields: [authorId], references: [id])
+  project       Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
   followUpTasks FollowUpTask[]
 
+  @@index([authorId], map: "feedbacks_authorId_fkey")
+  @@index([projectId], map: "feedbacks_projectId_fkey")
   @@map("feedbacks")
 }
 
 model FollowUpTask {
-  id           String           @id @default(cuid())
+  id           String         @id @default(cuid())
   feedbackId   String
   description  String
   dueDate      DateTime
-  status       FollowUpStatus   @default(PENDING)
-  reminderSent Boolean          @default(false)
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
+  status       FollowUpStatus @default(PENDING)
+  reminderSent Boolean        @default(false)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  feedback     Feedback       @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
 
-  // Relations
-  feedback Feedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
-
+  @@index([feedbackId], map: "follow_up_tasks_feedbackId_fkey")
   @@map("follow_up_tasks")
 }
 
@@ -332,39 +304,35 @@ model ImpactMetric {
   result     String
   unit       String?
   recordedAt DateTime @default(now())
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
-  // Relations
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
+  @@index([projectId], map: "impact_metrics_projectId_fkey")
   @@map("impact_metrics")
 }
 
-// Audit Logging
 model AuditLog {
-  id           String   @id @default(cuid())
+  id           String      @id @default(cuid())
   entityName   String
   entityId     String
   userId       String
   action       AuditAction
-  prevDataJSON String?  @db.Text
-  newDataJSON  String?  @db.Text
-  timestamp    DateTime @default(now())
+  prevDataJSON String?     @db.Text
+  newDataJSON  String?     @db.Text
+  timestamp    DateTime    @default(now())
   ip           String?
   userAgent    String?
+  user         User        @relation(fields: [userId], references: [id])
 
-  // Relations
-  user User @relation(fields: [userId], references: [id])
-
+  @@index([userId], map: "audit_logs_userId_fkey")
   @@map("audit_logs")
 }
 
-// Email Templates
 model EmailTemplate {
   id        String   @id @default(cuid())
   name      String   @unique
   subject   String
   body      String   @db.Text
-  variables String?  @db.Text // JSON array of available variables
+  variables String?  @db.Text
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -372,7 +340,50 @@ model EmailTemplate {
   @@map("email_templates")
 }
 
-// Enums
+model permissions {
+  id               String             @id
+  name             String             @unique
+  description      String?
+  category         String?
+  isActive         Boolean            @default(true)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime
+  role_permissions role_permissions[]
+  user_permissions user_permissions[]
+}
+
+model role_permissions {
+  id           String                @id
+  role         role_permissions_role
+  permissionId String
+  granted      Boolean               @default(true)
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime
+  permissions  permissions           @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([role, permissionId])
+  @@index([permissionId], map: "role_permissions_permissionId_fkey")
+}
+
+model user_permissions {
+  id           String      @id
+  userId       String
+  permissionId String
+  granted      Boolean     @default(true)
+  grantedBy    String?
+  grantedAt    DateTime?
+  revokedBy    String?
+  revokedAt    DateTime?
+  expiresAt    DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime
+  permissions  permissions @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  users        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, permissionId])
+  @@index([permissionId], map: "user_permissions_permissionId_fkey")
+}
+
 enum UserRole {
   ADMIN
   RESEARCHER
@@ -428,4 +439,11 @@ enum AuditAction {
   LOGOUT
   EXPORT
   VIEW
+}
+
+enum role_permissions_role {
+  ADMIN
+  RESEARCHER
+  SUPERVISOR
+  GENERAL_USER
 }
