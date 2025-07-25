@@ -1,8 +1,8 @@
 # University of Kabianga - Research Portal
 
----
+## UoK - Call for All ARGs
 
-From Laravel to Next.js
+Moving from Laravel to Next.js framework
 
 ---
 
@@ -26,4 +26,3 @@ The framework is open-sourced software...
 ---
 
 @UoK | Copyright 2025
-
