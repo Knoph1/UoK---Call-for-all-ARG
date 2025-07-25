@@ -1,0 +1,431 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Core User Management
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         UserRole @default(GENERAL_USER)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  researcher   Researcher?
+  loginAudits  LoginAudit[]
+  auditLogs    AuditLog[]
+  evaluations  Evaluation[]
+  feedbacks    Feedback[]
+  supervisedProjects Project[] @relation("SupervisorProjects")
+
+  @@map("users")
+}
+
+model Researcher {
+  id             String  @id @default(cuid())
+  userId         String  @unique
+  employeeNumber String  @unique
+  departmentId   String
+  designation    String?
+  phone          String?
+  isApproved     Boolean @default(false)
+  approvedAt     DateTime?
+  approvedBy     String?
+
+  // Relations
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  department Department @relation(fields: [departmentId], references: [id])
+  proposals  Proposal[]
+
+  @@map("researchers")
+}
+
+model LoginAudit {
+  id        String    @id @default(cuid())
+  userId    String
+  eventType EventType
+  ip        String?
+  userAgent String?
+  timestamp DateTime  @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("login_audits")
+}
+
+// Grant & Financial Management
+model FinancialYear {
+  id        String   @id @default(cuid())
+  label     String   @unique
+  startDate DateTime
+  endDate   DateTime
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  grantOpenings GrantOpening[]
+
+  @@map("financial_years")
+}
+
+model GrantOpening {
+  id               String   @id @default(cuid())
+  financialYearId  String
+  name             String
+  description      String?
+  openDate         DateTime
+  closeDate        DateTime
+  budgetCeiling    Decimal  @db.Decimal(15, 2)
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  financialYear FinancialYear @relation(fields: [financialYearId], references: [id], onDelete: Cascade)
+  proposals     Proposal[]
+
+  @@map("grant_openings")
+}
+
+// Research Themes
+model Theme {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  proposals Proposal[]
+
+  @@map("themes")
+}
+
+// Add Department model after Theme model
+model Department {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  code        String   @unique
+  description String?
+  headOfDept  String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  researchers Researcher[]
+
+  @@map("departments")
+}
+
+// Proposal Management
+model Proposal {
+  id              String          @id @default(cuid())
+  researcherId    String
+  grantOpeningId  String
+  themeId         String
+  researchTitle   String
+  objectives      String          @db.Text
+  methodology     String          @db.Text
+  timeline        String          @db.Text
+  requestedAmount Decimal         @db.Decimal(15, 2)
+  approvedAmount  Decimal?        @db.Decimal(15, 2)
+  status          ProposalStatus  @default(SUBMITTED)
+  priority        ProposalPriority @default(MEDIUM)
+  submissionDate  DateTime        @default(now())
+  reviewDate      DateTime?
+  approvalDate    DateTime?
+  rejectionReason String?         @db.Text
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relations
+  researcher        Researcher              @relation(fields: [researcherId], references: [id], onDelete: Cascade)
+  grantOpening      GrantOpening            @relation(fields: [grantOpeningId], references: [id], onDelete: Cascade)
+  theme             Theme                   @relation(fields: [themeId], references: [id], onDelete: Cascade)
+  coInvestigators   CoInvestigator[]
+  publications      Publication[]
+  researchDesignItems ResearchDesignItem[]
+  budgetItems       ProposalBudgetItem[]
+  workplanItems     WorkplanItem[]
+  attachments       ProposalAttachment[]
+  project           Project?
+
+  @@map("proposals")
+}
+
+model CoInvestigator {
+  id         String @id @default(cuid())
+  proposalId String
+  name       String
+  email      String
+  phone      String?
+  role       String?
+
+  // Relations
+  proposal Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  @@map("co_investigators")
+}
+
+model Publication {
+  id         String @id @default(cuid())
+  proposalId String
+  title      String
+  journal    String?
+  year       Int?
+  link       String?
+  doi        String?
+
+  // Relations
+  proposal Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  @@map("publications")
+}
+
+model ResearchDesignItem {
+  id          String @id @default(cuid())
+  proposalId  String
+  title       String
+  description String @db.Text
+
+  // Relations
+  proposal Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  @@map("research_design_items")
+}
+
+model ProposalBudgetItem {
+  id         String  @id @default(cuid())
+  proposalId String
+  itemName   String
+  cost       Decimal @db.Decimal(15, 2)
+  notes      String?
+
+  // Relations
+  proposal Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  @@map("proposal_budget_items")
+}
+
+model WorkplanItem {
+  id         String   @id @default(cuid())
+  proposalId String
+  activity   String
+  startDate  DateTime
+  endDate    DateTime
+  notes      String?
+
+  // Relations
+  proposal Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  @@map("workplan_items")
+}
+
+model ProposalAttachment {
+  id         String   @id @default(cuid())
+  proposalId String
+  fileName   String
+  filePath   String
+  fileType   String
+  fileSize   Int
+  uploadedAt DateTime @default(now())
+
+  // Relations
+  proposal Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  @@map("proposal_attachments")
+}
+
+// Project Management
+model Project {
+  id              String        @id @default(cuid())
+  proposalId      String        @unique
+  supervisorId    String
+  startDate       DateTime
+  endDate         DateTime?
+  status          ProjectStatus @default(INITIATED)
+  overallProgress Int           @default(0)
+  budgetUtilized  Decimal       @default(0) @db.Decimal(15, 2)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  proposal     Proposal     @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  supervisor   User         @relation("SupervisorProjects", fields: [supervisorId], references: [id])
+  evaluations  Evaluation[]
+  feedbacks    Feedback[]
+  impactMetrics ImpactMetric[]
+
+  @@map("projects")
+}
+
+// Supervision & Monitoring
+model Evaluation {
+  id           String   @id @default(cuid())
+  projectId    String
+  evaluatorId  String
+  comment      String   @db.Text
+  score        Int?     // 1-10 scale
+  date         DateTime @default(now())
+  attachmentPath String?
+
+  // Relations
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  evaluator User    @relation(fields: [evaluatorId], references: [id])
+
+  @@map("evaluations")
+}
+
+// Feedback & Impact Collection
+model Feedback {
+  id        String       @id @default(cuid())
+  projectId String
+  authorId  String
+  type      FeedbackType
+  content   String       @db.Text
+  createdAt DateTime     @default(now())
+
+  // Relations
+  project      Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  author       User           @relation(fields: [authorId], references: [id])
+  followUpTasks FollowUpTask[]
+
+  @@map("feedbacks")
+}
+
+model FollowUpTask {
+  id           String           @id @default(cuid())
+  feedbackId   String
+  description  String
+  dueDate      DateTime
+  status       FollowUpStatus   @default(PENDING)
+  reminderSent Boolean          @default(false)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  // Relations
+  feedback Feedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+
+  @@map("follow_up_tasks")
+}
+
+model ImpactMetric {
+  id         String   @id @default(cuid())
+  projectId  String
+  indicator  String
+  baseline   String?
+  result     String
+  unit       String?
+  recordedAt DateTime @default(now())
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("impact_metrics")
+}
+
+// Audit Logging
+model AuditLog {
+  id           String   @id @default(cuid())
+  entityName   String
+  entityId     String
+  userId       String
+  action       AuditAction
+  prevDataJSON String?  @db.Text
+  newDataJSON  String?  @db.Text
+  timestamp    DateTime @default(now())
+  ip           String?
+  userAgent    String?
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
+
+// Email Templates
+model EmailTemplate {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  subject   String
+  body      String   @db.Text
+  variables String?  @db.Text // JSON array of available variables
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("email_templates")
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  RESEARCHER
+  SUPERVISOR
+  GENERAL_USER
+}
+
+enum EventType {
+  LOGIN
+  LOGOUT
+  FAILED_LOGIN
+}
+
+enum ProposalStatus {
+  SUBMITTED
+  RECEIVED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum ProposalPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum ProjectStatus {
+  INITIATED
+  IN_PROGRESS
+  COMPLETED
+  SUSPENDED
+}
+
+enum FeedbackType {
+  RESEARCHER
+  SUPERVISOR
+  STAKEHOLDER
+}
+
+enum FollowUpStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  EXPORT
+  VIEW
+}

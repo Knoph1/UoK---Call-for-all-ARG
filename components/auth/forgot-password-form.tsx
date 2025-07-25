@@ -32,10 +32,10 @@ export function ForgotPasswordForm() {
             <h2 className="text-xl font-semibold text-green-600">Email Sent!</h2>
             <p className="text-gray-600 dark:text-gray-400">Please check your email for password reset instructions.</p>
             <Link
-              href="/auth/login"
+              href="/auth/signin"
               className="inline-block text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
             >
-              Back to Login
+              Back to Signin
             </Link>
           </div>
         </CardContent>
@@ -67,7 +67,7 @@ export function ForgotPasswordForm() {
 
           <div className="text-center">
             <Link
-              href="/auth/login"
+              href="/auth/signin"
               className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm"
             >
               Back to Login

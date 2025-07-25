@@ -24,7 +24,7 @@ export function RegisterForm() {
     // Simulate registration process
     setTimeout(() => {
       setIsLoading(false)
-      router.push("/auth/login")
+      router.push("/auth/signin")
     }, 1000)
   }
 
@@ -118,7 +118,7 @@ export function RegisterForm() {
           <div className="text-center text-sm">
             <span className="text-gray-600 dark:text-gray-400">New User? </span>
             <Link
-              href="/auth/login"
+              href="/auth/signin"
               className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
             >
               Login Here
