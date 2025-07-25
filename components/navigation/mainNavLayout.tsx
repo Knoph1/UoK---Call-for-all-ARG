@@ -47,9 +47,14 @@ const getNavigationItems = (session: any) => {
       title: "Main",
       items: [
         {
+          title: "Home",
+          url: "/home",
+          icon: Home,
+        },
+        {
           title: "Dashboard",
           url: "/dashboard",
-          icon: Home,
+          icon: BarChart3,
         },
         {
           title: "Proposals",
@@ -194,27 +199,26 @@ export function MainNavLayout({ children }: MainNavLayoutProps) {
             </Button>
           }
           rightContent={
-  session?.user ? (
-    <Button
-      variant="ghost"
-      size="sm"
-      className="text-white hover:bg-sky-500"
-      onClick={() => signOut()}
-    >
-      Logout
-    </Button>
-  ) : (
-    <Button
-      variant="ghost"
-      size="sm"
-      className="text-white hover:bg-sky-500"
-      onClick={() => signIn()}
-    >
-      SignIn
-    </Button>
-  )
-}
-
+            session?.user ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-white hover:bg-sky-500"
+                onClick={() => signOut()}
+              >
+                Logout
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-white hover:bg-sky-500"
+                onClick={() => signIn()}
+              >
+                SignIn
+              </Button>
+            )
+          }
         />
       </div>
 
