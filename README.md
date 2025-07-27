@@ -2,7 +2,9 @@
 
 ## UoK - Call for All ARGs
 
-Moving from Laravel to Next.js framework
+**University of Kabianga - Call for All Annual Research Grants**
+
+- Moving from Laravel to Next.js framework
 
 ---
 
