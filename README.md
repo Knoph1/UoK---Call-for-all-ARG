@@ -8,8 +8,7 @@ Moving from Laravel to Next.js framework
 
 ## Contributors
 
-- Felix K.
-- Knoph O. A.
+- *Felix K.* | *Knoph O. A.*
 
 ## Code of Conduct
 
@@ -25,4 +24,4 @@ The framework is open-sourced software...
 
 ---
 
-@UoK | Copyright 2025
+&copy; 2025 University of Kabianga - Research Portal. All rights reserved.
