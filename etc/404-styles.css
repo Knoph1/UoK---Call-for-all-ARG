@@ -1,0 +1,123 @@
+html,
+body {
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    font-family: "Avenir Next", Helvetica, sans-serif;
+    font-weight: normal;
+    font-size: 100%;
+}
+
+header {
+    color: #fff;
+    background: #000;
+}
+
+header h3 {
+    font-size: 30px;
+    margin: 0;
+    padding: 0;
+}
+
+main {
+    width: 100%;
+    height: 1000px;
+    margin: 0px auto;
+    background-color: #000;
+    background-image: url(/images/galpic_asteroids.png),
+    url(/images/stars_front.png),
+    url(/images/stars_back.png);
+    background-size: 25%, 130%, 130%;
+    background-repeat: no-repeat, repeat-x, repeat-x;
+    animation: animate-background linear 30s infinite;
+}
+
+@keyframes animate-background {
+    from {
+	background-position: -30% 0%, 0% 0, 0% 0;
+    } 
+    to {
+	background-position: 130% 80%, 433% 0, -433% 0;
+    }
+}
+
+.Loop {
+    position: relative;
+    height: 100%;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+section {
+    position: relative;
+    text-align: center;
+    min-height: 300%;
+    max-height: 300%;
+    height: 300%;
+}
+
+::scrollbar {
+    display: none;
+}
+
+.one {
+    background-image: url(/images/planet.png);
+    background-repeat: no-repeat;
+    background-position: 0 80%;
+}
+.two {
+    background-image: url(/images/super-moon.png);
+    background-repeat: no-repeat;
+    background-size: 25%;
+    background-position: 20%;
+}
+.three {
+    background-image: url(/images/earth.png);
+    background-repeat: no-repeat;
+    background-size: 25%;
+    background-position: 60%;
+}
+.four {
+    background-image: url(/images/sun.png);
+    background-repeat: no-repeat;
+    background-size: 25%;
+    background-position: 40%;
+}
+.five {
+    background-image: url(/images/galpic_asteroids.png);
+    background-repeat: no-repeat;
+    background-position: 90%;
+}
+.six {
+    background-image: url(/images/galpic_asteroids.png);
+    background-repeat: no-repeat;
+    background-position: 10%;
+}
+
+@media screen and (max-width: 600px) {
+
+    main {
+	background-size: 25%, 260%, 260%;
+    }
+
+    .one {
+	background-position: 0 10%;
+	background-size: 100%;
+    }
+
+    .five, .six {
+	    background-size: 40%;
+    }
+
+    @keyframes animate-background {
+	from {
+	    background-position: -30% 0%, 0% 0, 0% 0;
+	} 
+	to {
+	    background-position: 130% 80%, 325% 0, 162.5% 0;
+	}
+    }
+
+}
