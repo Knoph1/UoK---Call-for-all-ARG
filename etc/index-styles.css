@@ -1,0 +1,141 @@
+html,
+body {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+a:hover {
+    color: #0e70a0;
+}
+
+html {
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    margin: 0;
+    padding: 2%;
+}
+
+
+.large-image {
+    width: 100%;
+}
+
+.refuge-wall {
+    width: 85%;
+    box-shadow: 0 0 3px 2px #505050;
+}
+
+@media screen and (max-width: 600px) {
+
+    .large-image {
+	min-width: 50%;
+    }
+}
+
+.typewriter {
+  font-size: 15px;
+  margin: 5px 0 0 0px;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 50em
+}
+.typewriter:nth-child(1){
+    animation: type 4s steps(100, end);
+}
+
+.typewriter:nth-child(2){
+  animation: type2 11s steps(100, end);
+}
+.typewriter:nth-child(3){
+  animation: type3 17s steps(100, end);
+}
+.typewriter:nth-child(4){
+  animation: type4 21s steps(100, end);
+}
+.typewriter:nth-child(5){
+  animation: type5 25s steps(100, end);
+}
+
+#blink_one {
+  opacity: .0;
+  animation: blink 1s 3;
+}
+#blink_two {
+  opacity: .0;
+  animation: blink 1s 7;
+}
+#blink_three {
+  opacity: .0;
+  animation: blink 1s 13;
+}
+#blink_four {
+  opacity: .0;
+  animation: blink 1s 17;
+}
+#blink_five {
+  opacity: .0;
+  animation: blink 1s infinite;
+}
+@keyframes type{
+  from { width: 0; }
+}
+
+@keyframes type2{
+  0%{width: 0;}
+  20%{width: 0;}
+  100%{ width: 100; }
+}
+
+@keyframes type3{
+  0%{width: 0;}
+  40%{width: 0;}
+  100%{ width: 100; }
+}
+
+@keyframes type4{
+  0%{width: 0;}
+  60%{width: 0;}
+  100%{ width: 100; }
+}
+@keyframes type5{
+  0%{width: 0;}
+  80%{width: 0;}
+  100%{ width: 100; }
+}
+
+@keyframes blink {
+  0%{opacity: 1;}
+  100%{opacity: .0;}
+}
+
+@media (max-width: 780px) {
+
+	.typewriter:nth-child(1),
+	.typewriter:nth-child(2),
+	.typewriter:nth-child(3),
+	.typewriter:nth-child(4),
+	.typewriter:nth-child(5),
+	#blink_one, #blink_two,
+	#blink_three, #blink_four {
+		animation: none;
+	}
+
+    .typewriter {
+        font-size: 16px;
+        margin: 3px 0 0 0px;
+        white-space: nowrap;
+        overflow: hidden;
+        width: 17em;
+	}
+
+	.typewriter:nth-child(5){
+		white-space: normal;
+	}
+
+}
