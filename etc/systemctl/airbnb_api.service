@@ -1,0 +1,25 @@
+# systemd config file
+# reload daemon: $ sudo systemctl daemon-reload
+# start service: $ sudo systemctl start airbnb_api.service
+
+[Unit]
+Description=gunicorn api server running api and api docs
+
+[Service]
+User=ubuntu
+Group=www-data
+WorkingDirectory=/home/ubuntu/github.com/johncoleman83/AirBnB
+ExecStart=/usr/local/bin/gunicorn --bind 127.0.0.1:5001 wsgi.wsgi_api:app.app
+TimeoutSec=30
+Restart=on-failure
+RestartSec=30
+StartLimitInterval=350
+StartLimitBurst=10
+Environment=BTCPBNB_MYSQL_USER=btcpbnb_dev
+Environment=BTCPBNB_MYSQL_PWD=btcpbnb_dev_pwd
+Environment=BTCPBNB_MYSQL_HOST=localhost
+Environment=BTCPBNB_MYSQL_DB=btcpbnb_dev_db
+Environment=BTCPBNB_TYPE_STORAGE=db
+
+[Install]
+WantedBy=multi-user.target
